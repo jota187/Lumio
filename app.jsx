@@ -8,7 +8,7 @@ const storage = {
 };
 
 const defaultSettings = storage.get('lumio-settings-v1') || {
-  background:'#070b1a',
+  background:'#000',
   animation:true,
   speed:1,
   audio:true,
@@ -42,41 +42,9 @@ function popSound(){
   osc.start(); osc.stop(ctx.currentTime+0.2);
 }
 
-// starfield component (canvas)
-function Stars({bg='#070b1a'}) {
-  const ref = useRef();
-  useEffect(() => {
-    const canvas = ref.current;
-    const ctx = canvas.getContext('2d');
-    let stars = [];
-    function init() {
-      stars = Array.from({ length: 200 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.2 + 0.2,
-      }));
-      draw();
-    }
-    function draw() {
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#fff';
-      stars.forEach(s => {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
-        ctx.fill();
-      });
-      requestAnimationFrame(draw);
-    }
-    init();
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }, []);
-  return <canvas ref={ref} style={{position:'fixed',top:0,left:0,zIndex:-1}} />;
+// dummy background component (black)
+function Stars(){
+  return null; // removed starfield, background handled via body style
 }
 
 // Logo component
@@ -167,10 +135,10 @@ function SettingsModal({settings,onChange,onClose}){
   const [anim,setAnim]=useState(settings.animation);
   const [speed,setSpeed]=useState(settings.speed);
   const [audio,setAudio]=useState(settings.audio);
-  const save=()=>{onChange({background:bg,animation:anim,speed,speed,audio});onClose();};
+  const save=()=>{onChange({background:bg,animation:anim,speed,audio});onClose();};
   return (
-    <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{background:'#111',padding:20,borderRadius:8,width:320,color:'#fff'}}>
+    <div onClick={onClose} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:'#111',padding:20,borderRadius:8,width:320,color:'#fff'}}>
         <h3>Configurações</h3>
         <div>
           <label>Cor de fundo</label>
@@ -446,10 +414,10 @@ function MapView({map, onBack, onUpdate, settings}){
                 <circle r={30} fill={child.color||palette[0]} onClick={()=>navigate(child.id)} />
                 <NodeIcon node={child} r={30} />
                 <WrappedText text={child.label} r={30} />
-                {!map.readOnly && <g transform="translate(35 0)">
-                  <text style={{cursor:'pointer'}} onClick={()=>setEditingNode(child)}>✎</text>
-                  <text style={{cursor:'pointer',marginLeft:5}} onClick={()=>handleAdd(child)}>＋</text>
-                  <text style={{cursor:'pointer',marginLeft:5}} onClick={()=>handleDelete(centerNode,child)}>×</text>
+                {!map.readOnly && <g transform="translate(0 -40)" style={{pointerEvents:'all'}}>
+                  <text style={{cursor:'pointer',fontSize:14}} onClick={()=>setEditingNode(child)}>✎</text>
+                  <text style={{cursor:'pointer',fontSize:14,marginLeft:6}} onClick={()=>handleAdd(child)}>＋</text>
+                  <text style={{cursor:'pointer',fontSize:14,marginLeft:6}} onClick={()=>handleDelete(centerNode,child)}>×</text>
                 </g>}
                 {grandchildren.map((gc,j)=>{
                     const phi = angle*2 + (j/grandchildren.length)*2*Math.PI;
@@ -459,6 +427,11 @@ function MapView({map, onBack, onUpdate, settings}){
                       <g key={gc.id} transform={`translate(${gx} ${gy})`}>
                         <circle r={18} fill={gc.color||palette[0]} />
                         <NodeIcon node={gc} r={18} />
+                        {!map.readOnly && <g transform="translate(0 -30)" style={{pointerEvents:'all'}}>
+                          <text style={{cursor:'pointer',fontSize:12}} onClick={()=>setEditingNode(gc)}>✎</text>
+                          <text style={{cursor:'pointer',marginLeft:4,fontSize:12}} onClick={()=>handleAdd(gc)}>＋</text>
+                          <text style={{cursor:'pointer',marginLeft:4,fontSize:12}} onClick={()=>handleDelete(child,gc)}>×</text>
+                        </g>}
                       </g>
                     );
                 })}
@@ -521,7 +494,8 @@ function App(){
   };
   return (
     <>
-      <Stars bg={settings.background} />
+      {/* background handled via body style; no starfield */}
+      <Stars />
       <button onClick={()=>setShowSettings(true)} style={{position:'absolute',top:10,right:10,zIndex:20}}>⚙</button>
       {showSettings && <SettingsModal settings={settings} onChange={setSettings} onClose={()=>setShowSettings(false)}/>}
       {showSplash && <Splash onStart={()=>setShowSplash(false)}/>}
