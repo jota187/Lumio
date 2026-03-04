@@ -37,3 +37,9 @@ Português de Portugal.
   navegador/host através de `localStorage`.
 
 Bem-vindo ao seu universo mental!
+
+# como executar localmente
+python -m http.server 8000    # or
+npx serve .                   # or any static file server
+
+http://localhost:8000/
